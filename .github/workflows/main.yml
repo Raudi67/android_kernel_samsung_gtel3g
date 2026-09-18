@@ -1,0 +1,46 @@
+name: Teste kernel gtel3g
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Baixar kernel
+        uses: actions/checkout@v4
+
+      - name: Instalar ferramentas
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bc bison flex libssl-dev libncurses-dev
+
+      - name: Baixar GCC ARM 4.9
+        run: |
+          git clone --depth=1 \
+            https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git \
+            $HOME/gcc49
+
+      - name: Conferir compilador
+        run: |
+          $HOME/gcc49/bin/arm-linux-androideabi-gcc --version
+
+      - name: Configurar kernel
+        run: |
+          make ARCH=arm \
+            CROSS_COMPILE=$HOME/gcc49/bin/arm-linux-androideabi- \
+            gtel3g_defconfig
+
+      - name: Compilar kernel
+        run: |
+          make -j2 ARCH=arm \
+            CROSS_COMPILE=$HOME/gcc49/bin/arm-linux-androideabi-
+
+      - name: Mostrar resultados
+        if: always()
+        run: |
+          echo "=== arquivos produzidos ==="
+          find arch/arm/boot -maxdepth 2 -type f \
+            \( -name 'zImage*' -o -name '*.dtb' \) \
+            -printf '%p  %s bytes\n' | sort
