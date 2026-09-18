@@ -44,3 +44,12 @@ jobs:
           find arch/arm/boot -maxdepth 2 -type f \
             \( -name 'zImage*' -o -name '*.dtb' \) \
             -printf '%p  %s bytes\n' | sort
+
+      - name: Guardar kernel compilado
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-gtel3g-aes-cmac-test
+          path: |
+            arch/arm/boot/zImage
+            arch/arm/boot/dts/sprd-scx35_gtel3g_rev*.dtb
+          if-no-files-found: error      
